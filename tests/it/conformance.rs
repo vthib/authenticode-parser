@@ -1,8 +1,5 @@
 // Tests copied from the authenticode-parser repository.
 
-use crate::data::PE_FILE_1;
-
-use super::data::VALID_SIGNATURE_PEM;
 use authenticode_parser::{AuthenticodeVerify, CounterSignatureVerify};
 
 mod sys {
@@ -34,11 +31,8 @@ fn get_test_data() -> Vec<u8> {
 
     unsafe {
         let bio = BIO_new(BIO_s_mem());
-        BIO_write(
-            bio,
-            VALID_SIGNATURE_PEM.as_ptr(),
-            VALID_SIGNATURE_PEM.len() as _,
-        );
+        let data = std::fs::read("tests/assets/sig.pem").unwrap();
+        BIO_write(bio, data.as_ptr(), data.len() as _);
         let mut name = std::ptr::null();
         let mut header = std::ptr::null();
         let mut data = std::ptr::null();
@@ -416,7 +410,8 @@ fn first_signature_content() {
 fn pe_file() {
     authenticode_parser::initialize();
 
-    let auth = authenticode_parser::parse_pe(PE_FILE_1).unwrap();
+    let data = std::fs::read("tests/assets/pe_file").unwrap();
+    let auth = authenticode_parser::parse_pe(&data).unwrap();
     let signatures = auth.signatures();
     assert_eq!(signatures.len(), 2);
 
