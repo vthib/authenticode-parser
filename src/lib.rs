@@ -15,15 +15,13 @@ pub fn parse(data: &[u8]) -> Option<AuthenticodeArray> {
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct AuthenticodeArray(*mut sys::AuthenticodeArray);
 
 impl Drop for AuthenticodeArray {
     fn drop(&mut self) {
         if !self.0.is_null() {
-            // Safety: the 0 points to a sys::AuthenticodeArray object
-            // allocated by the C library, and it has not been freed before
-            // as we replace the 0 with NULL once freed.
             unsafe {
                 sys::authenticode_array_free(self.0);
             }
@@ -33,19 +31,12 @@ impl Drop for AuthenticodeArray {
 }
 
 impl AuthenticodeArray {
-    pub fn iter(&self) -> impl Iterator<Item = Authenticode> {
-        let slice = unsafe { std::slice::from_raw_parts((*self.0).signatures, (*self.0).count) };
-
-        slice.iter().filter_map(|v| {
-            if v.is_null() {
-                None
-            } else {
-                Some(Authenticode(unsafe { &**v }))
-            }
-        })
+    pub fn signatures(&self) -> &[Authenticode] {
+        unsafe { std::slice::from_raw_parts((*self.0).signatures.cast(), (*self.0).count) }
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct Authenticode<'a>(&'a sys::Authenticode);
 
@@ -100,45 +91,33 @@ impl Authenticode<'_> {
     /// All certificates in the Signature.
     ///
     /// This includes the ones in timestamp countersignatures.
-    pub fn certs(&self) -> Option<impl Iterator<Item = Certificate>> {
+    pub fn certs(&self) -> &[Certificate] {
         if self.0.certs.is_null() {
-            None
+            &[]
         } else {
-            let slice =
-                unsafe { std::slice::from_raw_parts((*self.0.certs).certs, (*self.0.certs).count) };
-            Some(slice.iter().filter_map(|v| {
-                if v.is_null() {
-                    None
-                } else {
-                    Some(Certificate(unsafe { &**v }))
-                }
-            }))
+            unsafe {
+                std::slice::from_raw_parts((*self.0.certs).certs.cast(), (*self.0.certs).count)
+            }
         }
     }
 
     /// Timestamp countersignatures.
-    pub fn countersigs(&self) -> Option<impl Iterator<Item = Countersignature>> {
+    pub fn countersigs(&self) -> &[Countersignature] {
         if self.0.countersigs.is_null() {
-            None
+            &[]
         } else {
-            let slice = unsafe {
+            unsafe {
                 std::slice::from_raw_parts(
-                    (*self.0.countersigs).counters,
+                    (*self.0.countersigs).counters.cast(),
                     (*self.0.countersigs).count,
                 )
-            };
-            Some(slice.iter().filter_map(|v| {
-                if v.is_null() {
-                    None
-                } else {
-                    Some(Countersignature(unsafe { &**v }))
-                }
-            }))
+            }
         }
     }
 }
 
 /// Represents SignerInfo structure.
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct Signer<'a>(&'a sys::Signer);
 
@@ -159,23 +138,18 @@ impl Signer<'_> {
     }
 
     /// Certificate chain of the signer
-    pub fn certificate_chain(&self) -> Option<impl Iterator<Item = Certificate>> {
+    pub fn certificate_chain(&self) -> &[Certificate] {
         if self.0.chain.is_null() {
-            None
+            &[]
         } else {
-            let slice =
-                unsafe { std::slice::from_raw_parts((*self.0.chain).certs, (*self.0.chain).count) };
-            Some(slice.iter().filter_map(|v| {
-                if v.is_null() {
-                    None
-                } else {
-                    Some(Certificate(unsafe { &**v }))
-                }
-            }))
+            unsafe {
+                std::slice::from_raw_parts((*self.0.chain).certs.cast(), (*self.0.chain).count)
+            }
         }
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct Countersignature<'a>(&'a sys::Countersignature);
 
@@ -213,23 +187,18 @@ impl Countersignature<'_> {
     }
 
     /// Certificate chain of the signer
-    pub fn certificate_chain(&self) -> Option<impl Iterator<Item = Certificate>> {
+    pub fn certificate_chain(&self) -> &[Certificate] {
         if self.0.chain.is_null() {
-            None
+            &[]
         } else {
-            let slice =
-                unsafe { std::slice::from_raw_parts((*self.0.chain).certs, (*self.0.chain).count) };
-            Some(slice.iter().filter_map(|v| {
-                if v.is_null() {
-                    None
-                } else {
-                    Some(Certificate(unsafe { &**v }))
-                }
-            }))
+            unsafe {
+                std::slice::from_raw_parts((*self.0.chain).certs.cast(), (*self.0.chain).count)
+            }
         }
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug)]
 pub struct Certificate<'a>(&'a sys::Certificate);
 

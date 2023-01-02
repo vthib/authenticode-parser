@@ -48,20 +48,11 @@ fn get_test_data() -> Vec<u8> {
 }
 
 #[test]
-fn result_overview() {
-    let data = get_test_data();
-    let auth = authenticode_parser::parse(&data).unwrap();
-    let signatures: Vec<_> = auth.iter().collect();
-    assert_eq!(signatures.len(), 3);
-}
-
-#[test]
 fn first_signature_content() {
     let data = get_test_data();
     let auth = authenticode_parser::parse(&data).unwrap();
 
-    let signatures: Vec<_> = auth.iter().collect();
-    assert_eq!(signatures.len(), 3);
+    let signatures = auth.signatures();
 
     //***********************************//
     // Check the first signature content //
@@ -95,7 +86,7 @@ fn first_signature_content() {
 
     //******************************************//
     // Test all certificates of first signature //
-    let certs: Vec<_> = first_sig.certs().unwrap().collect();
+    let certs = first_sig.certs();
     assert_eq!(certs.len(), 4);
 
     //**************************//
@@ -299,7 +290,7 @@ fn first_signature_content() {
 
     //*******************************************//
     // Test the first signature countersignature //
-    let countersigs: Vec<_> = first_sig.countersigs().unwrap().collect();
+    let countersigs = first_sig.countersigs();
     assert_eq!(countersigs.len(), 1);
 
     let countersig = &countersigs[0];
@@ -318,7 +309,7 @@ fn first_signature_content() {
         ]
     );
 
-    let chain: Vec<_> = countersig.certificate_chain().unwrap().collect();
+    let chain = countersig.certificate_chain();
     assert_eq!(chain.len(), 2);
 
     //**************************//
