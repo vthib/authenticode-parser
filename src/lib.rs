@@ -15,6 +15,15 @@ pub fn parse(data: &[u8]) -> Option<AuthenticodeArray> {
     }
 }
 
+pub fn parse_pe(data: &[u8]) -> Option<AuthenticodeArray> {
+    let res = unsafe { sys::parse_authenticode(data.as_ptr(), data.len() as _) };
+    if res.is_null() {
+        None
+    } else {
+        Some(AuthenticodeArray(res))
+    }
+}
+
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct AuthenticodeArray(*mut sys::AuthenticodeArray);
