@@ -1,19 +1,55 @@
 use std::path::PathBuf;
 
-fn main() {
-    let libdir = PathBuf::from("authenticode-parser")
-        .canonicalize()
-        .expect("cannot canonicalize path to submodule");
-
-    let build_dest = cmake::build("authenticode-parser");
-
+pub fn cargo_rerun_if_env_changed(target: &str, env_var: &str) {
+    println!("cargo:rerun-if-env-changed={}", env_var);
+    println!("cargo:rerun-if-env-changed={}_{}", env_var, target);
     println!(
-        "cargo:rustc-link-search=native={}/lib",
-        build_dest.display()
+        "cargo:rerun-if-env-changed={}_{}",
+        env_var,
+        target.replace('-', "_")
     );
+}
+
+pub fn get_target_env_var(target: &str, env_var: &str) -> Option<String> {
+    std::env::var(format!("{}_{}", env_var, target))
+        .or_else(|_| std::env::var(format!("{}_{}", env_var, target.replace('-', "_"))))
+        .or_else(|_| std::env::var(env_var))
+        .ok()
+}
+
+fn main() {
+    let target = std::env::var("TARGET").unwrap();
+
+    let libdir = PathBuf::from("authenticode-parser");
+    let srcdir = libdir.join("src");
+
+    cargo_rerun_if_env_changed(&target, "OPENSSL_LIB_DIR");
+    if let Some(openssl_lib_dir) = get_target_env_var(&target, "OPENSSL_LIB_DIR") {
+        println!(
+            "cargo:rustc-link-search=native={}",
+            PathBuf::from(openssl_lib_dir).display()
+        );
+    }
+
+    let mut builder = cc::Build::new();
+    builder
+        .file(srcdir.join("authenticode.c"))
+        .file(srcdir.join("helper.c"))
+        .file(srcdir.join("structs.c"))
+        .file(srcdir.join("countersignature.c"))
+        .file(srcdir.join("certificate.c"))
+        .include(libdir.join("include"));
+    #[cfg(target_endian = "big")]
+    builder.define("WORDS_BIGENDIAN");
+
+    builder.compile("authenticode");
+
     println!("cargo:rustc-link-lib=static=authenticode");
-    // FIXME: handle other OSes and other type of links
-    println!("cargo:rustc-link-lib=crypto");
+    if target.contains("windows-msvc") {
+        println!("cargo:rustc-link-lib=dylib=libcrypto");
+    } else {
+        println!("cargo:rustc-link-lib=dylib=crypto");
+    }
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
