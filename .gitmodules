@@ -1,3 +1,3 @@
 [submodule "authenticode-parser"]
-	path = authenticode-parser
+	path = authenticode-parser-sys/authenticode-parser
 	url = https://github.com/avast/authenticode-parser/

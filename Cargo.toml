@@ -1,8 +1,7 @@
 [package]
-name = "authenticode-parser-sys"
+name = "authenticode-parser"
 version = "0.1.0"
 edition = "2021"
 
-[build-dependencies]
-bindgen = "0.63"
-cmake = "0.1"
+[dependencies]
+authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.1.0" }

@@ -5,13 +5,15 @@ fn main() {
         .canonicalize()
         .expect("cannot canonicalize path to submodule");
 
-    // println!(
-    //     "cargo:rustc-link-search=native={}",
-    //     libdir.join("lib").display()
-    // );
-    // println!("cargo:rustc-link-lib=static=authenticode-parser");
+    let build_dest = cmake::build("authenticode-parser");
 
-    cmake::build("authenticode-parser");
+    println!(
+        "cargo:rustc-link-search=native={}/lib",
+        build_dest.display()
+    );
+    println!("cargo:rustc-link-lib=static=authenticode");
+    // FIXME: handle other OSes and other type of links
+    println!("cargo:rustc-link-lib=crypto");
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -26,7 +28,10 @@ fn main() {
                 .display()
                 .to_string(),
         )
+        .allowlist_function("initialize_authenticode_parser")
         .allowlist_function("parse_authenticode")
+        .allowlist_function("authenticode_new")
+        .allowlist_function("authenticode_array_free")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
