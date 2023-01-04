@@ -2,7 +2,14 @@
 name = "authenticode-parser-sys"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/vthib/authenticode-parser"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["authenticode", "ffi"]
+categories = ["external-ffi-bindings"]
 
 [build-dependencies]
-bindgen = "0.63"
+# Used to compile the library.
 cc = "1.0"
+# Used to generate the bindings for the target.
+bindgen = "0.63"

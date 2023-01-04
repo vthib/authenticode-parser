@@ -23,6 +23,28 @@ fn main() {
     let libdir = PathBuf::from("authenticode-parser");
     let srcdir = libdir.join("src");
 
+    // Build the lib. This is copied from its CMakeLists.txt.
+    let mut builder = cc::Build::new();
+    #[cfg(target_endian = "big")]
+    builder.define("WORDS_BIGENDIAN");
+    builder
+        .file(srcdir.join("authenticode.c"))
+        .file(srcdir.join("helper.c"))
+        .file(srcdir.join("structs.c"))
+        .file(srcdir.join("countersignature.c"))
+        .file(srcdir.join("certificate.c"))
+        .include(libdir.join("include"));
+    builder.compile("authenticode");
+
+    // Link to the built library, and to the openssl dependency
+    println!("cargo:rustc-link-lib=static=authenticode");
+    if target.contains("windows-msvc") {
+        println!("cargo:rustc-link-lib=dylib=libcrypto");
+    } else {
+        println!("cargo:rustc-link-lib=dylib=crypto");
+    }
+
+    // Add path to openssl lib for linking.
     cargo_rerun_if_env_changed(&target, "OPENSSL_LIB_DIR");
     if let Some(openssl_lib_dir) = get_target_env_var(&target, "OPENSSL_LIB_DIR") {
         println!(
@@ -31,29 +53,8 @@ fn main() {
         );
     }
 
-    let mut builder = cc::Build::new();
-    builder
-        .file(srcdir.join("authenticode.c"))
-        .file(srcdir.join("helper.c"))
-        .file(srcdir.join("structs.c"))
-        .file(srcdir.join("countersignature.c"))
-        .file(srcdir.join("certificate.c"))
-        .include(libdir.join("include"));
-    #[cfg(target_endian = "big")]
-    builder.define("WORDS_BIGENDIAN");
-
-    builder.compile("authenticode");
-
-    println!("cargo:rustc-link-lib=static=authenticode");
-    if target.contains("windows-msvc") {
-        println!("cargo:rustc-link-lib=dylib=libcrypto");
-    } else {
-        println!("cargo:rustc-link-lib=dylib=crypto");
-    }
-
-    // The bindgen::Builder is the main entry point
-    // to bindgen, and lets you build up options for
-    // the resulting bindings.
+    // Generate bindings using bindgen.
+    // If https://github.com/avast/authenticode-parser/pull/12 is fixed, this could be removed :(
     let bindings = bindgen::Builder::default()
         .clang_arg(format!("-I{}", libdir.join("include").display()))
         .header(
