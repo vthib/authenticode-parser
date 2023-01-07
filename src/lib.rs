@@ -5,9 +5,7 @@
 #![deny(clippy::pedantic)]
 #![deny(missing_docs)]
 #![deny(clippy::cargo)]
-
-use std::ffi::CStr;
-use std::ptr::null_mut;
+#![deny(clippy::undocumented_unsafe_blocks)]
 
 use authenticode_parser_sys as sys;
 
@@ -47,6 +45,9 @@ pub struct InitializationToken;
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
 pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
+    // Safety:
+    // - the data buffer is valid and the length is at worsed clamped
+    // - the library has been initialized as we have a `InitializationToken`.
     let res = unsafe { sys::authenticode_new(data.as_ptr(), data.len() as _) };
     if res.is_null() {
         None
@@ -66,6 +67,9 @@ pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeAr
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
 pub fn parse_pe(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
+    // Safety:
+    // - the data buffer is valid and the length is at worsed clamped
+    // - the library has been initialized as we have a `InitializationToken`.
     let res = unsafe { sys::parse_authenticode(data.as_ptr(), data.len() as _) };
     if res.is_null() {
         None
@@ -75,17 +79,17 @@ pub fn parse_pe(_token: &InitializationToken, data: &[u8]) -> Option<Authenticod
 }
 
 /// Array of authenticode signatures.
+//
+// Invariant: the pointer must not be null.
 #[repr(transparent)]
 #[derive(Debug)]
 pub struct AuthenticodeArray(*mut sys::AuthenticodeArray);
 
 impl Drop for AuthenticodeArray {
     fn drop(&mut self) {
-        if !self.0.is_null() {
-            unsafe {
-                sys::authenticode_array_free(self.0);
-            }
-            self.0 = null_mut();
+        // Safety: pointer is not null and has been created by the authenticode-parser library.
+        unsafe {
+            sys::authenticode_array_free(self.0);
         }
     }
 }
@@ -94,7 +98,26 @@ impl AuthenticodeArray {
     /// Array of authenticode signatures.
     #[must_use]
     pub fn signatures(&self) -> &[Authenticode] {
-        unsafe { std::slice::from_raw_parts((*self.0).signatures.cast(), (*self.0).count) }
+        // Safety: invariant of the struct: pointer must not be null.
+        let this = unsafe { &(*self.0) };
+
+        if this.signatures.is_null() {
+            &[]
+        } else {
+            // Safety:
+            // The signatures field has type `*mut *mut sys::Authenticode`. It is safe to cast
+            // to `*mut Authenticode` because:
+            // - The Authenticode type is a transparent wrapper on a &sys::Authenticode
+            // - The `*mut sys::Authenticode` pointers in the array are guaranteed to be non-null
+            //   (checked by auditing the C code).
+            let signatures = this.signatures.cast::<Authenticode>();
+
+            // Safety:
+            // - The signatures + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(signatures, this.count) }
+        }
     }
 }
 
@@ -132,7 +155,8 @@ impl Authenticode<'_> {
     /// Name of the digest algorithm.
     #[must_use]
     pub fn digest_alg(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.digest_alg)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.digest_alg) }
     }
 
     /// File digest stored in the signature.
@@ -153,6 +177,9 @@ impl Authenticode<'_> {
         if self.0.signer.is_null() {
             None
         } else {
+            // Safety:
+            // - The pointer is not null.
+            // - The pointer is valid as long as self is not dropped.
             Some(Signer(unsafe { &*self.0.signer }))
         }
     }
@@ -165,9 +192,22 @@ impl Authenticode<'_> {
         if self.0.certs.is_null() {
             &[]
         } else {
-            unsafe {
-                std::slice::from_raw_parts((*self.0.certs).certs.cast(), (*self.0.certs).count)
-            }
+            // Safety: pointer is not null.
+            let this = unsafe { &(*self.0.certs) };
+
+            // Safety:
+            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+            // to `*mut Certificate` because:
+            // - The Certificate type is a transparent wrapper on a &sys::Certificate
+            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
+            //   (checked by auditing the C code).
+            let certs = this.certs.cast::<Certificate>();
+
+            // Safety:
+            // - The certs + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(certs, this.count) }
         }
     }
 
@@ -177,12 +217,22 @@ impl Authenticode<'_> {
         if self.0.countersigs.is_null() {
             &[]
         } else {
-            unsafe {
-                std::slice::from_raw_parts(
-                    (*self.0.countersigs).counters.cast(),
-                    (*self.0.countersigs).count,
-                )
-            }
+            // Safety: pointer is not null.
+            let this = unsafe { &(*self.0.countersigs) };
+
+            // Safety:
+            // The certs field has type `*mut *mut sys::Countersignature`. It is safe to cast
+            // to `*mut Countersignature` because:
+            // - The Countersignature type is a transparent wrapper on a &sys::Countersignature
+            // - The `*mut sys::Countersignature` pointers in the array are guaranteed to be
+            //   non-null (checked by auditing the C code).
+            let counters = this.counters.cast::<Countersignature>();
+
+            // Safety:
+            // - The counters + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(counters, this.count) }
         }
     }
 }
@@ -202,13 +252,15 @@ impl Signer<'_> {
     /// Name of the digest algorithm.
     #[must_use]
     pub fn digest_alg(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.digest_alg)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.digest_alg) }
     }
 
     /// Program name stored in `SpcOpusInfo` structure of Authenticode */
     #[must_use]
     pub fn program_name(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.program_name)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.program_name) }
     }
 
     /// Certificate chain of the signer
@@ -217,9 +269,22 @@ impl Signer<'_> {
         if self.0.chain.is_null() {
             &[]
         } else {
-            unsafe {
-                std::slice::from_raw_parts((*self.0.chain).certs.cast(), (*self.0.chain).count)
-            }
+            // Safety: pointer is not null.
+            let this = unsafe { &(*self.0.chain) };
+
+            // Safety:
+            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+            // to `*mut Certificate` because:
+            // - The Certificate type is a transparent wrapper on a &sys::Certificate
+            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
+            //   (checked by auditing the C code).
+            let certs = this.certs.cast::<Certificate>();
+
+            // Safety:
+            // - The certs + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(certs, this.count) }
         }
     }
 }
@@ -257,7 +322,8 @@ impl Countersignature<'_> {
     /// Name of the digest algorithm.
     #[must_use]
     pub fn digest_alg(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.digest_alg)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.digest_alg) }
     }
 
     /// Stored message digest.
@@ -272,9 +338,22 @@ impl Countersignature<'_> {
         if self.0.chain.is_null() {
             &[]
         } else {
-            unsafe {
-                std::slice::from_raw_parts((*self.0.chain).certs.cast(), (*self.0.chain).count)
-            }
+            // Safety: pointer is not null.
+            let this = unsafe { &(*self.0.chain) };
+
+            // Safety:
+            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+            // to `*mut Certificate` because:
+            // - The Certificate type is a transparent wrapper on a &sys::Certificate
+            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
+            //   (checked by auditing the C code).
+            let certs = this.certs.cast::<Certificate>();
+
+            // Safety:
+            // - The certs + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(certs, this.count) }
         }
     }
 }
@@ -294,17 +373,20 @@ impl Certificate<'_> {
     /// Oneline name of Issuer.
     #[must_use]
     pub fn issuer(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.issuer)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.issuer) }
     }
     /// Oneline name of Subject.
     #[must_use]
     pub fn subject(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.subject)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.subject) }
     }
     /// Serial number in format 00:01:02:03:04...
     #[must_use]
     pub fn serial(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.serial)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.serial) }
     }
 
     /// SHA1 of the DER representation of the cert.
@@ -322,19 +404,22 @@ impl Certificate<'_> {
     /// Name of the key algorithm.
     #[must_use]
     pub fn key_alg(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.key_alg)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.key_alg) }
     }
 
     /// Name of the signature algorithm.
     #[must_use]
     pub fn sig_alg(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.sig_alg)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.sig_alg) }
     }
 
     /// OID of the signature algorithm.
     #[must_use]
     pub fn sig_alg_oid(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.sig_alg_oid)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.sig_alg_oid) }
     }
 
     /// `NotBefore` validity.
@@ -352,7 +437,8 @@ impl Certificate<'_> {
     /// PEM encoded public key.
     #[must_use]
     pub fn key(&self) -> Option<&[u8]> {
-        cstr_ptr_to_slice(&self.0.key)
+        // Safety: the pointer is valid as long as self is not dropped.
+        unsafe { cstr_ptr_to_slice(&self.0.key) }
     }
 
     /// Parsed X509 Attributes of Issuer.
@@ -475,15 +561,29 @@ fn byte_array_to_slice(digest: &sys::ByteArray) -> Option<&[u8]> {
                 Err(_) => usize::MAX,
             }
         };
+        // Safety:
+        // - The data + len pair is guaranteed by the library to represent an array.
+        // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+        //   freed before the slice is dropped.
         Some(unsafe { std::slice::from_raw_parts(digest.data, len) })
     }
 }
 
-fn cstr_ptr_to_slice(ptr: &*mut i8) -> Option<&[u8]> {
+/// Cast a ptr to a cstring to slice of bytes.
+///
+/// Safety:
+///
+/// The pointer must be valid at least as long as the borrow used to generate the lifetime of
+/// the slice.
+unsafe fn cstr_ptr_to_slice(ptr: &*mut i8) -> Option<&[u8]> {
     if ptr.is_null() {
         None
     } else {
-        let cstr = unsafe { CStr::from_ptr(ptr.cast()) };
+        // Safety:
+        // - The pointer is not null.
+        // - The library guarantees this is a pointer to a c string (so it has a null terminator).
+        // - The pointer is valid as long as the lifetime used.
+        let cstr = unsafe { std::ffi::CStr::from_ptr(ptr.cast_const()) };
         Some(cstr.to_bytes())
     }
 }
