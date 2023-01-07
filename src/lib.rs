@@ -14,7 +14,7 @@
 use authenticode_parser_sys as sys;
 
 /// Token indicating the library has been initialized.
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct InitializationToken;
 
 impl InitializationToken {
