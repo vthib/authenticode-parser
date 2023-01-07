@@ -9,5 +9,9 @@ license = "MIT OR Apache-2.0"
 keywords = ["authenticode"]
 categories = ["api-bindings"]
 
+[features]
+default = []
+bindgen = ["authenticode-parser-sys/bindgen"]
+
 [dependencies]
 authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.1.0" }

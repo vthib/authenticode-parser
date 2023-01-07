@@ -9,8 +9,16 @@ license = "MIT OR Apache-2.0"
 keywords = ["authenticode", "ffi"]
 categories = ["external-ffi-bindings"]
 
+[features]
+default = []
+
+# Default behavior is to use commited bindings, as those bindings
+# are valid for all targets. However, the `bindgen` feature can
+# be used to force generating bindings at built time.
+bindgen = ["dep:bindgen"]
+
 [build-dependencies]
 # Used to compile the library.
 cc = "1.0"
 # Used to generate the bindings for the target.
-bindgen = "0.63"
+bindgen = { version = "0.63", optional = true }

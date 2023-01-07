@@ -53,6 +53,12 @@ fn main() {
         );
     }
 
+    #[cfg(feature = "bindgen")]
+    generate_bindings(&libdir);
+}
+
+#[cfg(feature = "bindgen")]
+fn generate_bindings(libdir: &std::path::Path) {
     // Generate bindings using bindgen.
     // If https://github.com/avast/authenticode-parser/pull/12 is fixed, this could be removed :(
     let bindings = bindgen::Builder::default()
