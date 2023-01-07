@@ -1,5 +1,6 @@
 [package]
 name = "authenticode-parser-sys"
+description = "Raw FFI bindings to the authenticode-parser library"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/vthib/authenticode-parser"

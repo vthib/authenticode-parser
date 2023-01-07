@@ -1,7 +1,13 @@
 [package]
 name = "authenticode-parser"
+description = "Bindings to the authenticode-parser library"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/vthib/authenticode-parser"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["authenticode"]
+categories = ["api-bindings"]
 
 [dependencies]
 authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.1.0" }
