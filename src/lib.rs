@@ -13,27 +13,29 @@
 
 use authenticode_parser_sys as sys;
 
-/// Initialize the library.
-///
-/// Initializes all globals `OpenSSl` objects we need for parsing.
-///
-/// # Safety
-///
-/// This is not thread-safe and can cause crashes if called at the same time as other functions
-/// from the OpenSSL library. Therefore, you need to ensure that this function is called when no
-/// other threads might call OpenSSL functions, for example before setting up any multithreading
-/// environment.
-///
-/// See <https://github.com/openssl/openssl/issues/13524>.
-#[must_use]
-pub unsafe fn initialize() -> InitializationToken {
-    sys::initialize_authenticode_parser();
-    InitializationToken
-}
-
 /// Token indicating the library has been initialized.
 #[derive(Debug)]
 pub struct InitializationToken;
+
+impl InitializationToken {
+    /// Initialize the library.
+    ///
+    /// Initializes all globals `OpenSSl` objects we need for parsing.
+    ///
+    /// # Safety
+    ///
+    /// This is not thread-safe and can cause crashes if called at the same time as other functions
+    /// from the OpenSSL library. Therefore, you need to ensure that this function is called when no
+    /// other threads might call OpenSSL functions, for example before setting up any multithreading
+    /// environment.
+    ///
+    /// See <https://github.com/openssl/openssl/issues/13524>.
+    #[must_use]
+    pub unsafe fn new() -> InitializationToken {
+        sys::initialize_authenticode_parser();
+        InitializationToken
+    }
+}
 
 /// Constructs `AuthenticodeArray` from binary data containing Authenticode signature.
 ///

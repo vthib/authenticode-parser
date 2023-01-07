@@ -46,7 +46,7 @@ fn get_test_data() -> Vec<u8> {
 #[test]
 fn first_signature_content() {
     let data = get_test_data();
-    let token = unsafe { authenticode_parser::initialize() };
+    let token = unsafe { authenticode_parser::InitializationToken::new() };
     let auth = authenticode_parser::parse(&token, &data).unwrap();
 
     let signatures = auth.signatures();
@@ -410,7 +410,7 @@ fn first_signature_content() {
 #[test]
 fn pe_file() {
     let data = std::fs::read("tests/assets/pe_file").unwrap();
-    let token = unsafe { authenticode_parser::initialize() };
+    let token = unsafe { authenticode_parser::InitializationToken::new() };
     let auth = authenticode_parser::parse_pe(&token, &data).unwrap();
     let signatures = auth.signatures();
     assert_eq!(signatures.len(), 2);
