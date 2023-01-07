@@ -1,3 +1,6 @@
+[workspace]
+members = ["authenticode-parser-sys"]
+
 [package]
 name = "authenticode-parser"
 description = "Bindings to the authenticode-parser library"
