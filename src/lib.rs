@@ -11,14 +11,27 @@ use std::ptr::null_mut;
 
 use authenticode_parser_sys as sys;
 
-/// Initialize the parser.
+/// Initialize the library.
 ///
-/// Initializes all globals `OpenSSl` objects we need for parsing, this is not thread-safe and
-/// needs to be called only once, before any multithreading environment.
+/// Initializes all globals `OpenSSl` objects we need for parsing.
+///
+/// # Safety
+///
+/// This is not thread-safe and can cause crashes if called at the same time as other functions
+/// from the OpenSSL library. Therefore, you need to ensure that this function is called when no
+/// other threads might call OpenSSL functions, for example before setting up any multithreading
+/// environment.
+///
 /// See <https://github.com/openssl/openssl/issues/13524>.
-pub fn initialize() {
-    unsafe { sys::initialize_authenticode_parser() }
+#[must_use]
+pub unsafe fn initialize() -> InitializationToken {
+    sys::initialize_authenticode_parser();
+    InitializationToken
 }
+
+/// Token indicating the library has been initialized.
+#[derive(Debug)]
+pub struct InitializationToken;
 
 /// Constructs `AuthenticodeArray` from binary data containing Authenticode signature.
 ///
@@ -33,7 +46,7 @@ pub fn initialize() {
 ///
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
-pub fn parse(data: &[u8]) -> Option<AuthenticodeArray> {
+pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
     let res = unsafe { sys::authenticode_new(data.as_ptr(), data.len() as _) };
     if res.is_null() {
         None
@@ -52,7 +65,7 @@ pub fn parse(data: &[u8]) -> Option<AuthenticodeArray> {
 ///
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
-pub fn parse_pe(data: &[u8]) -> Option<AuthenticodeArray> {
+pub fn parse_pe(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
     let res = unsafe { sys::parse_authenticode(data.as_ptr(), data.len() as _) };
     if res.is_null() {
         None

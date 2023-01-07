@@ -1,5 +1,7 @@
 // Tests copied from the authenticode-parser repository.
 
+// Tests must be run with --test-threads=1, as the initialize call might race between tests.
+
 use authenticode_parser::{AuthenticodeVerify, CounterSignatureVerify};
 
 mod sys {
@@ -27,8 +29,6 @@ mod sys {
 fn get_test_data() -> Vec<u8> {
     use sys::*;
 
-    authenticode_parser::initialize();
-
     unsafe {
         let bio = BIO_new(BIO_s_mem());
         let data = std::fs::read("tests/assets/sig.pem").unwrap();
@@ -46,7 +46,8 @@ fn get_test_data() -> Vec<u8> {
 #[test]
 fn first_signature_content() {
     let data = get_test_data();
-    let auth = authenticode_parser::parse(&data).unwrap();
+    let token = unsafe { authenticode_parser::initialize() };
+    let auth = authenticode_parser::parse(&token, &data).unwrap();
 
     let signatures = auth.signatures();
 
@@ -408,10 +409,9 @@ fn first_signature_content() {
 
 #[test]
 fn pe_file() {
-    authenticode_parser::initialize();
-
     let data = std::fs::read("tests/assets/pe_file").unwrap();
-    let auth = authenticode_parser::parse_pe(&data).unwrap();
+    let token = unsafe { authenticode_parser::initialize() };
+    let auth = authenticode_parser::parse_pe(&token, &data).unwrap();
     let signatures = auth.signatures();
     assert_eq!(signatures.len(), 2);
 
