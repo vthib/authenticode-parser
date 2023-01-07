@@ -5,6 +5,10 @@
 #![deny(clippy::pedantic)]
 #![deny(missing_docs)]
 #![deny(clippy::cargo)]
+#![deny(clippy::arithmetic_side_effects)]
+#![deny(clippy::as_conversions)]
+#![deny(clippy::as_underscore)]
+#![deny(clippy::integer_arithmetic)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 
 use authenticode_parser_sys as sys;
@@ -45,10 +49,11 @@ pub struct InitializationToken;
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
 pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
+    let len = u64::try_from(data.len()).unwrap_or(u64::MAX);
     // Safety:
     // - the data buffer is valid and the length is at worsed clamped
     // - the library has been initialized as we have a `InitializationToken`.
-    let res = unsafe { sys::authenticode_new(data.as_ptr(), data.len() as _) };
+    let res = unsafe { sys::authenticode_new(data.as_ptr(), len) };
     if res.is_null() {
         None
     } else {
@@ -67,10 +72,11 @@ pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeAr
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
 pub fn parse_pe(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
+    let len = u64::try_from(data.len()).unwrap_or(u64::MAX);
     // Safety:
     // - the data buffer is valid and the length is at worsed clamped
     // - the library has been initialized as we have a `InitializationToken`.
-    let res = unsafe { sys::parse_authenticode(data.as_ptr(), data.len() as _) };
+    let res = unsafe { sys::parse_authenticode(data.as_ptr(), len) };
     if res.is_null() {
         None
     } else {
