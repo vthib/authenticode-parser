@@ -70,6 +70,9 @@ fn main() {
     println!("cargo:rustc-link-lib=static=authenticode");
     if target.contains("windows-msvc") {
         println!("cargo:rustc-link-lib=dylib=libcrypto");
+
+        println!("cargo:rustc-link-lib=dylib=user32");
+        println!("cargo:rustc-link-lib=dylib=crypt32");
     } else {
         println!("cargo:rustc-link-lib=dylib=crypto");
     }
