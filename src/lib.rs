@@ -20,7 +20,7 @@ pub struct InitializationToken;
 impl InitializationToken {
     /// Initialize the library.
     ///
-    /// Initializes all globals `OpenSSl` objects we need for parsing.
+    /// Initializes all globals `OpenSSL` objects we need for parsing.
     ///
     /// # Safety
     ///
@@ -375,7 +375,9 @@ impl Certificate<'_> {
     /// Raw version of X509.
     #[must_use]
     pub fn version(&self) -> i64 {
-        self.0.version
+        // False positive: this conversion is needed on arch where long is i32
+        #[allow(clippy::useless_conversion)]
+        i64::from(self.0.version)
     }
 
     /// Oneline name of Issuer.
