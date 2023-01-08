@@ -4,7 +4,7 @@ members = ["authenticode-parser-sys"]
 [package]
 name = "authenticode-parser"
 description = "Bindings to the authenticode-parser library"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/vthib/authenticode-parser"
 readme = "README.md"
