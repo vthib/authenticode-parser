@@ -5,5 +5,6 @@
 
 Native bindings for the [authenticode parser library](https://github.com/avast/authenticode-parser) from Avast.
 
-This library depends on Openssl. You might need to set the env variable `OPENSSL_LIB_DIR` to indicate where
-the openssl library is located.
+This library depends on Openssl. If the library is not found by default, you can either:
+- define the `OPENSSL_DIR` env variable, from which the include and library dir will be computed.
+- define the `OPENSSL_INCLUDE_DIR` and `OPENSSL_LIB_DIR` env variables.
