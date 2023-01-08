@@ -23,6 +23,33 @@ fn main() {
     let libdir = PathBuf::from("authenticode-parser");
     let srcdir = libdir.join("src");
 
+    cargo_rerun_if_env_changed(&target, "OPENSSL_DIR");
+    cargo_rerun_if_env_changed(&target, "OPENSSL_INCLUDE_DIR");
+    cargo_rerun_if_env_changed(&target, "OPENSSL_LIB_DIR");
+
+    // If OPENSSL_DIR is set, use it to extrapolate lib and include dir
+    let mut openssl_include_dir = None;
+    if let Some(openssl_dir) = get_target_env_var(&target, "OPENSSL_DIR") {
+        let openssl_dir = PathBuf::from(openssl_dir);
+
+        openssl_include_dir = Some(openssl_dir.join("include"));
+        println!(
+            "cargo:rustc-link-search=native={}",
+            openssl_dir.join("lib").display()
+        );
+    } else {
+        // Otherwise, retrieve OPENSSL_INCLUDE_DIR and OPENSSL_LIB_DIR
+        if let Some(include_dir) = get_target_env_var(&target, "OPENSSL_INCLUDE_DIR") {
+            openssl_include_dir = Some(PathBuf::from(include_dir));
+        }
+        if let Some(openssl_lib_dir) = get_target_env_var(&target, "OPENSSL_LIB_DIR") {
+            println!(
+                "cargo:rustc-link-search=native={}",
+                PathBuf::from(openssl_lib_dir).display()
+            );
+        }
+    }
+
     // Build the lib. This is copied from its CMakeLists.txt.
     let mut builder = cc::Build::new();
     #[cfg(target_endian = "big")]
@@ -34,6 +61,9 @@ fn main() {
         .file(srcdir.join("countersignature.c"))
         .file(srcdir.join("certificate.c"))
         .include(libdir.join("include"));
+    if let Some(include_dir) = openssl_include_dir {
+        builder.include(include_dir);
+    }
     builder.compile("authenticode");
 
     // Link to the built library, and to the openssl dependency
@@ -42,15 +72,6 @@ fn main() {
         println!("cargo:rustc-link-lib=dylib=libcrypto");
     } else {
         println!("cargo:rustc-link-lib=dylib=crypto");
-    }
-
-    // Add path to openssl lib for linking.
-    cargo_rerun_if_env_changed(&target, "OPENSSL_LIB_DIR");
-    if let Some(openssl_lib_dir) = get_target_env_var(&target, "OPENSSL_LIB_DIR") {
-        println!(
-            "cargo:rustc-link-search=native={}",
-            PathBuf::from(openssl_lib_dir).display()
-        );
     }
 
     #[cfg(feature = "bindgen")]
