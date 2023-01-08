@@ -15,7 +15,7 @@ use authenticode_parser_sys as sys;
 
 /// Token indicating the library has been initialized.
 #[derive(Copy, Clone, Debug)]
-pub struct InitializationToken;
+pub struct InitializationToken(());
 
 impl InitializationToken {
     /// Initialize the library.
@@ -33,7 +33,7 @@ impl InitializationToken {
     #[must_use]
     pub unsafe fn new() -> InitializationToken {
         sys::initialize_authenticode_parser();
-        InitializationToken
+        InitializationToken(())
     }
 }
 
