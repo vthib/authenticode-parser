@@ -8,6 +8,8 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["authenticode", "ffi"]
 categories = ["external-ffi-bindings"]
+# MSRV
+rust-version = "1.60"
 
 [features]
 default = []
