@@ -11,6 +11,8 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["authenticode"]
 categories = ["api-bindings"]
+# MSRV
+rust-version = "1.60"
 
 [features]
 default = []

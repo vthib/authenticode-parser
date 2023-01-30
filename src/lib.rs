@@ -593,7 +593,7 @@ unsafe fn cstr_ptr_to_slice(ptr: &*mut i8) -> Option<&[u8]> {
         // - The pointer is not null.
         // - The library guarantees this is a pointer to a c string (so it has a null terminator).
         // - The pointer is valid as long as the lifetime used.
-        let cstr = unsafe { std::ffi::CStr::from_ptr(ptr.cast_const()) };
+        let cstr = unsafe { std::ffi::CStr::from_ptr(ptr.cast()) };
         Some(cstr.to_bytes())
     }
 }
