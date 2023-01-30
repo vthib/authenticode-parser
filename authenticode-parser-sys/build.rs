@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 pub fn cargo_rerun_if_env_changed(target: &str, env_var: &str) {
-    println!("cargo:rerun-if-env-changed={}", env_var);
-    println!("cargo:rerun-if-env-changed={}_{}", env_var, target);
+    println!("cargo:rerun-if-env-changed={env_var}");
+    println!("cargo:rerun-if-env-changed={env_var}_{target}");
     println!(
         "cargo:rerun-if-env-changed={}_{}",
         env_var,
@@ -11,7 +11,7 @@ pub fn cargo_rerun_if_env_changed(target: &str, env_var: &str) {
 }
 
 pub fn get_target_env_var(target: &str, env_var: &str) -> Option<String> {
-    std::env::var(format!("{}_{}", env_var, target))
+    std::env::var(format!("{env_var}_{target}"))
         .or_else(|_| std::env::var(format!("{}_{}", env_var, target.replace('-', "_"))))
         .or_else(|_| std::env::var(env_var))
         .ok()
