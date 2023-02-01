@@ -4,7 +4,7 @@ members = ["authenticode-parser-sys"]
 [package]
 name = "authenticode-parser"
 description = "Bindings to the authenticode-parser library"
-version = "0.2.3"
+version = "0.3.0"
 edition = "2021"
 repository = "https://github.com/vthib/authenticode-parser"
 readme = "README.md"
@@ -19,4 +19,4 @@ default = []
 bindgen = ["authenticode-parser-sys/bindgen"]
 
 [dependencies]
-authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.2.1" }
+authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.3.0" }
