@@ -64,7 +64,7 @@ fn main() {
     if let Some(include_dir) = openssl_include_dir {
         builder.include(include_dir);
     }
-    builder.compile("authenticode");
+    builder.compile("authenticode-parser");
 
     // Link to the built library, and to the openssl dependency
     if target.contains("windows-msvc") {

@@ -8,6 +8,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["authenticode", "ffi"]
 categories = ["external-ffi-bindings"]
+links = "authenticode-parser"
 # MSRV
 rust-version = "1.60"
 
