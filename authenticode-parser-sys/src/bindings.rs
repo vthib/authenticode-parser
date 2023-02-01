@@ -104,7 +104,7 @@ extern "C" {
 
     pub fn ap_parse_authenticode(pe_data: *const u8, pe_len: u64) -> *mut AuthenticodeArray;
 
-    pub fn ap_authenticode_new(data: *const u8, len: u64) -> *mut AuthenticodeArray;
+    pub fn ap_authenticode_new(data: *const u8, len: i32) -> *mut AuthenticodeArray;
 
     pub fn ap_authenticode_array_free(auth: *mut AuthenticodeArray);
 }

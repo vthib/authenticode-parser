@@ -51,7 +51,7 @@ impl InitializationToken {
 /// Verification result is stored in `verify_flags` with the first verification error.
 #[must_use]
 pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeArray> {
-    let len = u64::try_from(data.len()).unwrap_or(u64::MAX);
+    let len = i32::try_from(data.len()).unwrap_or(i32::MAX);
     // Safety:
     // - the data buffer is valid and the length is at worsed clamped
     // - the library has been initialized as we have a `InitializationToken`.
