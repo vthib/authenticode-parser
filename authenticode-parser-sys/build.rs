@@ -52,8 +52,10 @@ fn main() {
 
     // Build the lib. This is copied from its CMakeLists.txt.
     let mut builder = cc::Build::new();
+
     #[cfg(target_endian = "big")]
-    builder.define("WORDS_BIGENDIAN");
+    builder.define("WORDS_BIGENDIAN", "");
+
     builder
         .file(srcdir.join("authenticode.c"))
         .file(srcdir.join("helper.c"))
