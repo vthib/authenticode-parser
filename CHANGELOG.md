@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased changes
+
+### Fixed
+
+- Fix compilation on MSRV 1.60
+- Fix warning due to unsafe block in unsafe function.
+
+### Changed
+
+- Added CI job to ensure MSRV is checked.
+
 ## [0.3.1] - 2023-02-26
 
 ### Fixed
