@@ -1,6 +1,7 @@
 //! Bindings for the
 //! [authenticode parser library](https://github.com/avast/authenticode-parser) from Avast.
 
+#![warn(unsafe_op_in_unsafe_fn)]
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 #![deny(missing_docs)]
@@ -32,7 +33,10 @@ impl InitializationToken {
     /// See <https://github.com/openssl/openssl/issues/13524>.
     #[must_use]
     pub unsafe fn new() -> InitializationToken {
-        sys::ap_initialize_authenticode_parser();
+        // Safety: enforced by safety comment on this function.
+        unsafe {
+            sys::ap_initialize_authenticode_parser();
+        }
         InitializationToken(())
     }
 }
