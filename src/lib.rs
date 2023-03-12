@@ -589,7 +589,7 @@ fn byte_array_to_slice(digest: &sys::ByteArray) -> Option<&[u8]> {
 ///
 /// The pointer must be valid at least as long as the borrow used to generate the lifetime of
 /// the slice.
-unsafe fn cstr_ptr_to_slice(ptr: &*mut std::ffi::c_char) -> Option<&[u8]> {
+unsafe fn cstr_ptr_to_slice(ptr: &*mut std::os::raw::c_char) -> Option<&[u8]> {
     if ptr.is_null() {
         None
     } else {
