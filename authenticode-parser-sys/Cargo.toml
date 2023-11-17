@@ -24,4 +24,4 @@ bindgen = ["dep:bindgen"]
 # Used to compile the library.
 cc = "1.0"
 # Used to generate the bindings for the target.
-bindgen = { version = "0.63", optional = true }
+bindgen = { version = "0.69", optional = true, default-features = false, features = [ "runtime" ] }
