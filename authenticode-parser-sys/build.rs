@@ -102,7 +102,7 @@ fn generate_bindings(libdir: &std::path::Path) {
         .allowlist_function("ap_authenticode_array_free")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 
