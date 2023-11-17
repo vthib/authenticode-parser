@@ -115,12 +115,12 @@ jobs:
       - run: cargo fmt --all --check
 
   msrv:
-    name: Rust 1.60.0
+    name: Rust 1.65.0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - uses: dtolnay/rust-toolchain@1.60.0
+      - uses: dtolnay/rust-toolchain@1.65.0
       - run: cargo check --workspace
       - run: cargo check --workspace --features bindgen
