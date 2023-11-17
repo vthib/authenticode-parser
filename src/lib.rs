@@ -9,7 +9,6 @@
 #![deny(clippy::arithmetic_side_effects)]
 #![deny(clippy::as_conversions)]
 #![deny(clippy::as_underscore)]
-#![deny(clippy::integer_arithmetic)]
 #![deny(clippy::undocumented_unsafe_blocks)]
 
 use authenticode_parser_sys as sys;
