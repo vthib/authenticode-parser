@@ -17,6 +17,7 @@ rust-version = "1.65"
 [features]
 default = []
 bindgen = ["authenticode-parser-sys/bindgen"]
+static_openssl = ["authenticode-parser-sys/static_openssl"]
 
 [dependencies]
 authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.3.1" }
