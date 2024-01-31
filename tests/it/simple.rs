@@ -6,6 +6,6 @@ use crate::get_init_token;
 fn test_simple() {
     let _token = get_init_token();
 
-    let auth = unsafe { sys::ap_parse_authenticode(b"".as_ptr(), 0) };
+    let auth = unsafe { sys::parse_authenticode(b"".as_ptr(), 0) };
     assert!(auth.is_null());
 }
