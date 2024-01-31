@@ -34,7 +34,7 @@ impl InitializationToken {
     pub unsafe fn new() -> InitializationToken {
         // Safety: enforced by safety comment on this function.
         unsafe {
-            sys::ap_initialize_authenticode_parser();
+            sys::initialize_authenticode_parser();
         }
         InitializationToken(())
     }
@@ -58,7 +58,7 @@ pub fn parse(_token: &InitializationToken, data: &[u8]) -> Option<AuthenticodeAr
     // Safety:
     // - the data buffer is valid and the length is at worsed clamped
     // - the library has been initialized as we have a `InitializationToken`.
-    let res = unsafe { sys::ap_authenticode_new(data.as_ptr(), len) };
+    let res = unsafe { sys::authenticode_new(data.as_ptr(), len) };
     if res.is_null() {
         None
     } else {
@@ -81,7 +81,7 @@ pub fn parse_pe(_token: &InitializationToken, data: &[u8]) -> Option<Authenticod
     // Safety:
     // - the data buffer is valid and the length is at worsed clamped
     // - the library has been initialized as we have a `InitializationToken`.
-    let res = unsafe { sys::ap_parse_authenticode(data.as_ptr(), len) };
+    let res = unsafe { sys::parse_authenticode(data.as_ptr(), len) };
     if res.is_null() {
         None
     } else {
@@ -100,7 +100,7 @@ impl Drop for AuthenticodeArray {
     fn drop(&mut self) {
         // Safety: pointer is not null and has been created by the authenticode-parser library.
         unsafe {
-            sys::ap_authenticode_array_free(self.0);
+            sys::authenticode_array_free(self.0);
         }
     }
 }

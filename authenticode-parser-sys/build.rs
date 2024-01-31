@@ -96,10 +96,10 @@ fn generate_bindings(libdir: &std::path::Path) {
                 .display()
                 .to_string(),
         )
-        .allowlist_function("ap_initialize_authenticode_parser")
-        .allowlist_function("ap_parse_authenticode")
-        .allowlist_function("ap_authenticode_new")
-        .allowlist_function("ap_authenticode_array_free")
+        .allowlist_function("initialize_authenticode_parser")
+        .allowlist_function("parse_authenticode")
+        .allowlist_function("authenticode_new")
+        .allowlist_function("authenticode_array_free")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))

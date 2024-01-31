@@ -100,11 +100,11 @@ pub struct AuthenticodeArray {
 }
 
 extern "C" {
-    pub fn ap_initialize_authenticode_parser();
+    pub fn initialize_authenticode_parser();
 
-    pub fn ap_parse_authenticode(pe_data: *const u8, pe_len: u64) -> *mut AuthenticodeArray;
+    pub fn parse_authenticode(pe_data: *const u8, pe_len: u64) -> *mut AuthenticodeArray;
 
-    pub fn ap_authenticode_new(data: *const u8, len: i32) -> *mut AuthenticodeArray;
+    pub fn authenticode_new(data: *const u8, len: i32) -> *mut AuthenticodeArray;
 
-    pub fn ap_authenticode_array_free(auth: *mut AuthenticodeArray);
+    pub fn authenticode_array_free(auth: *mut AuthenticodeArray);
 }
