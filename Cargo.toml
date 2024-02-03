@@ -18,5 +18,8 @@ rust-version = "1.65"
 default = []
 bindgen = ["authenticode-parser-sys/bindgen"]
 
+# If enabled the OpenSSL library is linked statically.
+openssl-static = ["authenticode-parser-sys/openssl-static"]
+
 [dependencies]
 authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.3.1" }

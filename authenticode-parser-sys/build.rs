@@ -68,14 +68,19 @@ fn main() {
     }
     builder.compile("authenticode-parser");
 
+    let link_mode = if cfg!(feature = "openssl-static") {
+        "static"
+    } else {
+        "dylib"
+    };
+
     // Link to the built library, and to the openssl dependency
     if target.contains("windows-msvc") {
-        println!("cargo:rustc-link-lib=dylib=libcrypto");
-
+        println!("cargo:rustc-link-lib={}=libcrypto", link_mode);
         println!("cargo:rustc-link-lib=dylib=user32");
         println!("cargo:rustc-link-lib=dylib=crypt32");
     } else {
-        println!("cargo:rustc-link-lib=dylib=crypto");
+        println!("cargo:rustc-link-lib={}=crypto", link_mode);
     }
 
     #[cfg(feature = "bindgen")]
