@@ -67,13 +67,13 @@ fn main() {
         builder.include(include_dir);
     }
     builder.compile("authenticode-parser");
-    
+
     let link_mode = if cfg!(feature = "openssl-static") {
         "static"
     } else {
         "dylib"
     };
-    
+
     // Link to the built library, and to the openssl dependency
     if target.contains("windows-msvc") {
         println!("cargo:rustc-link-lib={}=libcrypto", link_mode);
