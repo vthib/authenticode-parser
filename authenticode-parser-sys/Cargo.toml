@@ -21,7 +21,7 @@ default = []
 bindgen = ["dep:bindgen"]
 
 # If enabled the OpenSSL library is linked statically.
-static_openssl = []
+static-openssl = []
 
 [build-dependencies]
 # Used to compile the library.

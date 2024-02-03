@@ -68,7 +68,7 @@ fn main() {
     }
     builder.compile("authenticode-parser");
     
-    let link_mode = if cfg!(feature = "static_openssl") {
+    let link_mode = if cfg!(feature = "static-openssl") {
         "static"
     } else {
         "dylib"
