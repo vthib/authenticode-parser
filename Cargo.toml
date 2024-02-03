@@ -19,7 +19,7 @@ default = []
 bindgen = ["authenticode-parser-sys/bindgen"]
 
 # If enabled the OpenSSL library is linked statically.
-static-openssl = ["authenticode-parser-sys/static-openssl"]
+openssl-static = ["authenticode-parser-sys/openssl-static"]
 
 [dependencies]
 authenticode-parser-sys = { path = "./authenticode-parser-sys", version = "0.3.1" }
