@@ -25,14 +25,23 @@ jobs:
           sudo apt install libssl-dev:i386 gcc-multilib
           echo "OPENSSL_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
           echo "OPENSSL_LIB_DIR=/usr/lib/i386-linux-gnu" >> $GITHUB_ENV
+
       - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: ${{matrix.target}}
+
       - run: cargo test --workspace --target=${{matrix.target}}
       - run: cargo test --workspace --features bindgen --target=${{matrix.target}}
+
+      - name: Add libcrypto.a to lib path
+        if: ${{ matrix.build == 'linux' }}
+        run: |
+          echo "OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
+
+      - run: cargo test --workspace --features openssl-static --target=${{matrix.target}}
 
     strategy:
       fail-fast: false
@@ -75,6 +84,7 @@ jobs:
 
       - run: cargo test --workspace --target=${{matrix.target}}
       - run: cargo test --workspace --features bindgen --target=${{matrix.target}}
+      - run: cargo test --workspace --features openssl-static --target=${{matrix.target}}
 
     strategy:
       fail-fast: false
