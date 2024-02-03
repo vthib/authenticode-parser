@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2024-02-03
+
+### Added
+
+- New feature `openssl-static` to link openssl statically ([a0dfb90](https://github.com/vthib/authenticode-parser/commit/a0dfb90)).
+
+### Changed
+
+- `authenticode-parser` library updated to latest master [82a586f](https://github.com/avast/authenticode-parser/commit/82a586f)
+  ([eb5b6f](https://github.com/vthib/authenticode-parser/commit/eb5b6f)).
+- MSRV update to 1.65 ([576633e](https://github.com/vthib/authenticode-parser/commit/576633e)).
+- Update `bindgen` to `0.69` ([e163cc5](https://github.com/vthib/authenticode-parser/commit/e163cc5)).
+
 ## [0.3.2] - 2023-03-12
 
 ### Fixed
@@ -69,8 +82,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial release
 
-[unreleased]: https://github.com/vthib/authenticode-parser/compare/v0.3.2...HEAD
-[0.3.1]: https://github.com/vthib/authenticode-parser/compare/v0.3.1...v0.3.2
+[unreleased]: https://github.com/vthib/authenticode-parser/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vthib/authenticode-parser/compare/v0.3.2...v0.4.0
+[0.3.2]: https://github.com/vthib/authenticode-parser/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vthib/authenticode-parser/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vthib/authenticode-parser/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/vthib/authenticode-parser/compare/v0.2.2...v0.2.3
