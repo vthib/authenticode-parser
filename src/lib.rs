@@ -235,7 +235,7 @@ impl Authenticode<'_> {
             // pointer and pass it to `std::slice::from_raw_parts` because this function
             // doesn't accept null pointers. We need a NonNull::dangling() pointer, which
             // is the right way of creating an empty slice with `std::slice::from_raw_parts`.
-            let counters = if this.counters == std::ptr::null_mut() {
+            let counters = if this.counters.is_null() {
                 std::ptr::NonNull::<Countersignature>::dangling().as_ptr()
             } else {
                 // Safety:
@@ -289,7 +289,7 @@ impl Signer<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.chain) };
 
-            let certs = if this.certs == std::ptr::null_mut() {
+            let certs = if this.certs.is_null() {
                 std::ptr::NonNull::<Certificate>::dangling().as_ptr()
             } else {
                 // Safety:
