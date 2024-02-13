@@ -520,7 +520,7 @@ fn microsoft_first_signature_content() {
     //******************************************//
     // Test all certificates of first signature //
     let certs = first_sig.certs();
-    assert_eq!(certs.len(), 2);
+    assert_eq!(certs.len(), 4);
 
     //**************************//
     // Check the 1. certificate //
@@ -553,6 +553,28 @@ fn microsoft_first_signature_content() {
         [
             0x77, 0xa1, 0x0e, 0xbf, 0x07, 0x54, 0x27, 0x25, 0x21, 0x8c, 0xd8, 0x3a, 0x01, 0xb5,
             0x21, 0xc5, 0x7b, 0xc6, 0x7f, 0x73
+        ]
+    );
+
+    //**************************//
+    // Check the 3. certificate //
+    let cert = &certs[2];
+    assert_eq!(
+        cert.sha1().unwrap(),
+        [
+            0x9a, 0xb3, 0xfa, 0x0a, 0x1a, 0xdb, 0xcf, 0x46, 0xb1, 0xee, 0xce, 0x7b, 0x9f, 0x93,
+            0xe8, 0xa7, 0x75, 0x42, 0xf2, 0x0c
+        ]
+    );
+
+    //**************************//
+    // Check the 4. certificate //
+    let cert = &certs[3];
+    assert_eq!(
+        cert.sha1().unwrap(),
+        [
+            0x2a, 0xa7, 0x52, 0xfe, 0x64, 0xc4, 0x9a, 0xbe, 0x82, 0x91, 0x3c, 0x46, 0x35, 0x29,
+            0xcf, 0x10, 0xff, 0x2f, 0x04, 0xee
         ]
     );
 
