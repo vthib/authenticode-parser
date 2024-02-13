@@ -231,13 +231,19 @@ impl Authenticode<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.countersigs) };
 
-            // Safety:
-            // The certs field has type `*mut *mut sys::Countersignature`. It is safe to cast
-            // to `*mut Countersignature` because:
-            // - The Countersignature type is a transparent wrapper on a &sys::Countersignature
-            // - The `*mut sys::Countersignature` pointers in the array are guaranteed to be
-            //   non-null (checked by auditing the C code).
-            let counters = this.counters.cast::<Countersignature>();
+            // `this.counters` may be null, and in that case we can't simply cast the null
+            // pointer and pass it to `std::slice::from_raw_parts` because this function
+            // doesn't accept null pointers. We need a NonNull::dangling() pointer, which
+            // is the right way of creating an empty slice with `std::slice::from_raw_parts`.
+            let counters = if this.counters.is_null() {
+                std::ptr::NonNull::<Countersignature>::dangling().as_ptr()
+            } else {
+                // Safety:
+                // The certs field has type `*mut *mut sys::Countersignature`. It is safe to cast
+                // to `*mut Countersignature` because the Countersignature type is a transparent
+                // wrapper on a &sys::Countersignature.
+                this.counters.cast::<Countersignature>()
+            };
 
             // Safety:
             // - The counters + count pair is guaranteed by the library to represent an array.
@@ -283,13 +289,15 @@ impl Signer<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.chain) };
 
-            // Safety:
-            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
-            // to `*mut Certificate` because:
-            // - The Certificate type is a transparent wrapper on a &sys::Certificate
-            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
-            //   (checked by auditing the C code).
-            let certs = this.certs.cast::<Certificate>();
+            let certs = if this.certs.is_null() {
+                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
+            } else {
+                // Safety:
+                // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+                // to `*mut Certificate` because the Certificate type is a transparent wrapper
+                // on a &sys::Certificate.
+                this.certs.cast::<Certificate>()
+            };
 
             // Safety:
             // - The certs + count pair is guaranteed by the library to represent an array.
