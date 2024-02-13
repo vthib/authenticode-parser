@@ -235,14 +235,14 @@ impl Authenticode<'_> {
             // pointer and pass it to `std::slice::from_raw_parts` because this function
             // doesn't accept null pointers. We need a NonNull::dangling() pointer, which
             // is the right way of creating an empty slice with `std::slice::from_raw_parts`.
-            let counters = if this.counters != std::ptr::null_mut() {
+            let counters = if this.counters == std::ptr::null_mut() {
+                std::ptr::NonNull::<Countersignature>::dangling().as_ptr()
+            } else {
                 // Safety:
                 // The certs field has type `*mut *mut sys::Countersignature`. It is safe to cast
                 // to `*mut Countersignature` because the Countersignature type is a transparent
                 // wrapper on a &sys::Countersignature.
                 this.counters.cast::<Countersignature>()
-            } else {
-                std::ptr::NonNull::<Countersignature>::dangling().as_ptr()
             };
 
             // Safety:
@@ -289,14 +289,14 @@ impl Signer<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.chain) };
 
-            let certs = if this.certs != std::ptr::null_mut() {
+            let certs = if this.certs == std::ptr::null_mut() {
+                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
+            } else {
                 // Safety:
                 // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
                 // to `*mut Certificate` because the Certificate type is a transparent wrapper
                 // on a &sys::Certificate.
                 this.certs.cast::<Certificate>()
-            } else {
-                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
             };
 
             // Safety:
