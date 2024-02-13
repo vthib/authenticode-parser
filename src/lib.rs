@@ -379,6 +379,35 @@ impl Countersignature<'_> {
             unsafe { std::slice::from_raw_parts(certs, this.count) }
         }
     }
+
+    /// All certs stored inside Countersignature.
+    ///
+    /// This can be a superset of `certificate_chain` in case of non PKCS9 countersignature.
+    #[must_use]
+    pub fn certs(&self) -> &[Certificate] {
+        if self.0.certs.is_null() {
+            &[]
+        } else {
+            // Safety: pointer is not null.
+            let this = unsafe { &(*self.0.certs) };
+
+            let certs = if this.certs.is_null() {
+                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
+            } else {
+                // Safety:
+                // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+                // to `*mut Certificate` because the Certificate type is a transparent wrapper
+                // on a &sys::Certificate.
+                this.certs.cast::<Certificate>()
+            };
+
+            // Safety:
+            // - The certs + count pair is guaranteed by the library to represent an array.
+            // - The lifetime of the slice is tied to the lifetime of self, so the memory cannot be
+            //   freed before the slice is dropped.
+            unsafe { std::slice::from_raw_parts(certs, this.count) }
+        }
+    }
 }
 
 /// Authenticode certificate.
