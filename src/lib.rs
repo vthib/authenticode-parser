@@ -206,13 +206,15 @@ impl Authenticode<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.certs) };
 
-            // Safety:
-            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
-            // to `*mut Certificate` because:
-            // - The Certificate type is a transparent wrapper on a &sys::Certificate
-            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
-            //   (checked by auditing the C code).
-            let certs = this.certs.cast::<Certificate>();
+            let certs = if this.certs.is_null() {
+                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
+            } else {
+                // Safety:
+                // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+                // to `*mut Certificate` because the Certificate type is a transparent wrapper
+                // on a &sys::Certificate.
+                this.certs.cast::<Certificate>()
+            };
 
             // Safety:
             // - The certs + count pair is guaranteed by the library to represent an array.
@@ -360,13 +362,15 @@ impl Countersignature<'_> {
             // Safety: pointer is not null.
             let this = unsafe { &(*self.0.chain) };
 
-            // Safety:
-            // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
-            // to `*mut Certificate` because:
-            // - The Certificate type is a transparent wrapper on a &sys::Certificate
-            // - The `*mut sys::Certificate` pointers in the array are guaranteed to be non-null
-            //   (checked by auditing the C code).
-            let certs = this.certs.cast::<Certificate>();
+            let certs = if this.certs.is_null() {
+                std::ptr::NonNull::<Certificate>::dangling().as_ptr()
+            } else {
+                // Safety:
+                // The certs field has type `*mut *mut sys::Certificate`. It is safe to cast
+                // to `*mut Certificate` because the Certificate type is a transparent wrapper
+                // on a &sys::Certificate.
+                this.certs.cast::<Certificate>()
+            };
 
             // Safety:
             // - The certs + count pair is guaranteed by the library to represent an array.
