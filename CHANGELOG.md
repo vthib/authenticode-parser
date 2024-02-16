@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2024-02-16
+
+### Added
+
+- New `certs` field in `CounterSignature` object ([d874438](https://github.com/vthib/authenticode-parser/commit/d874438)).
+
+### Changed
+
+- `authenticode-parser` library updated to latest master [d538f33](https://github.com/avast/authenticode-parser/commit/d538f33)
+  ([69d493f](https://github.com/vthib/authenticode-parser/commit/69d493f)).
+
+### Fixed
+
+- Added protection against null pointers returned by the library [744cf20](https://github.com/vthib/authenticode-parser/commit/744cf20)
+  and [dd4f27f](https://github.com/vthib/authenticode-parser/commit/dd4f27f).
+
 ## [0.4.0] - 2024-02-03
 
 ### Added
