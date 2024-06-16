@@ -655,7 +655,7 @@ pub enum CounterSignatureVerify {
     UnknownAlgorithm,
     /// Verification failed, digest mismatch
     Invalid,
-    /// Failed to decrypt countersignature enc_digest for verification
+    /// Failed to decrypt countersignature `enc_digest` for verification
     CantDecryptDigest,
     /// No digest saved inside the countersignature
     DigestMissing,
@@ -680,9 +680,9 @@ pub enum AuthenticodeVerify {
     DigestMissing,
     /// Non verification errors - allocations etc.
     InternalError,
-    /// SignerInfo part of PKCS7 is missing
+    /// `SignerInfo` part of PKCS7 is missing
     NoSignerInfo,
-    /// PKCS7 doesn't have type of SignedData, can't proceed
+    /// PKCS7 doesn't have type of `SignedData`, can't proceed
     WrongPkcs7Type,
     /// PKCS7 doesn't have corrent content, can't proceed
     BadContent,
